@@ -31,6 +31,26 @@ namespace dotnet_rpg.Services.CharacterService
             return serviceResponse;
         }
 
+        public async Task<ServiceResponse<List<GetCharacterDTO>>> DeleteCharacter(int id)
+        {
+            ServiceResponse<List<GetCharacterDTO>> response = new ServiceResponse<List<GetCharacterDTO>>();
+
+            try
+            {
+                Character character = characters.First(c => c.Id == id);
+
+                characters.Remove(character);
+                response.Data = characters.Select(c => _mapper.Map<GetCharacterDTO>(c)).ToList();
+            }
+            catch (Exception ex)
+            {
+                response.Success = false;
+                response.Message = ex.Message;
+            }
+
+            return response;
+        }
+
         public async Task<ServiceResponse<List<GetCharacterDTO>>> GetAllCharacters()
         {
             return new ServiceResponse<List<GetCharacterDTO>>
