@@ -83,7 +83,8 @@ namespace dotnet_rpg.Services.CharacterService
 
             try
             {
-                Character character = characters.FirstOrDefault(c => c.Id == updatedCharacter.Id);
+                Character character = await _context.Characters
+                    .FirstOrDefaultAsync(c => c.Id == updatedCharacter.Id);
 
                 // character.Name = updatedCharacter.Name;
                 // character.HitPoints = updatedCharacter.HitPoints;
@@ -93,6 +94,8 @@ namespace dotnet_rpg.Services.CharacterService
                 // character.Class = updatedCharacter.Class;
 
                 _mapper.Map(updatedCharacter, character);
+
+                await _context.SaveChangesAsync();
 
                 response.Data = _mapper.Map<GetCharacterDTO>(character);
             }
