@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
+using dotnet_rpg.Data;
 using dotnet_rpg.DTOs.Character;
+using Microsoft.EntityFrameworkCore;
 
 namespace dotnet_rpg.Services.CharacterService
 {
@@ -13,11 +15,14 @@ namespace dotnet_rpg.Services.CharacterService
             new Character(),
             new Character { Id = 1, Name = "Sam" }
         };
-        private readonly IMapper _mapper;
 
-        public CharacterService(IMapper mapper)
+        private readonly IMapper _mapper;
+        private readonly DataContext _context;
+
+        public CharacterService(IMapper mapper, DataContext context)
         {
             _mapper = mapper;
+            _context = context;
         }
 
         public async Task<ServiceResponse<List<GetCharacterDTO>>> AddCharacter(AddCharacterDTO newCharacter)
@@ -53,19 +58,21 @@ namespace dotnet_rpg.Services.CharacterService
 
         public async Task<ServiceResponse<List<GetCharacterDTO>>> GetAllCharacters()
         {
-            return new ServiceResponse<List<GetCharacterDTO>>
-            {
-                Data = characters.Select(c => _mapper.Map<GetCharacterDTO>(c)).ToList()
-            };
+            var response = new ServiceResponse<List<GetCharacterDTO>>();
+            var dbCharacters = await _context.Characters.ToListAsync();
+
+            response.Data = dbCharacters.Select(c => _mapper.Map<GetCharacterDTO>(c)).ToList();
+
+            return response;
         }
 
         public async Task<ServiceResponse<GetCharacterDTO>> GetCharactersById(int id)
         {
-            var serviceResponse = new ServiceResponse<GetCharacterDTO>();
-            var character = characters.FirstOrDefault(c => c.Id == id);
-            serviceResponse.Data = _mapper.Map<GetCharacterDTO>(character);
+            var response = new ServiceResponse<GetCharacterDTO>();
+            var dbCharacter = await _context.Characters.FirstOrDefaultAsync(c => c.Id == id);
+            response.Data = _mapper.Map<GetCharacterDTO>(dbCharacter);
 
-            return serviceResponse;
+            return response;
         }
 
         public async Task<ServiceResponse<GetCharacterDTO>> UpdateCharacter(UpdateCharacterDTO updatedCharacter)
